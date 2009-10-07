@@ -140,22 +140,23 @@ class AssetHelper extends Helper {
 		$prev = '';
 		$holding = array();
 		foreach ($this->View->__scripts as $i => $script) {
-			if (preg_match('/(src|href)="\/?((themed\/[^\/]+)?.*\/)?(js|css)\/(.*).(js|css)"/', $script, $match)) {
+			if (preg_match('/(src|href)="(\/?((themed\/[^\/]+)?.*\/)?(js|css)\/(.*).(js|css))"/', $script, $match)) {
 				$temp = array();
-				$temp['script'] = $match[5];
-				$temp['plugin'] = trim($match[2], '/');
-				if (!empty($match[3])) {
-					$temp['plugin'] = str_replace($match[3], '', $temp['plugin']);
+				$temp['script'] = $match[6];
+				$temp['plugin'] = trim($match[3], '/');
+				if (!empty($match[4])) {
+					$temp['plugin'] = str_replace($match[4], '', $temp['plugin']);
 				}
+				$temp['url'] = str_replace(basename($match[2]), '', $match[2]);
 
-				if($prev != $match[6] && !empty($holding)) {
+				if($prev != $match[7] && !empty($holding)) {
 					$this->assets[$slot] = array('type' => $prev, 'assets' => $holding);
 					$holding = array();
 					$slot ++;
 				}
 
 				$holding[] = $temp;
-				$prev = $match[6];
+				$prev = $match[7];
 			} else {
 				if(!empty($holding)) {
 					$this->assets[$slot] = array('type' => $prev, 'assets' => $holding);
@@ -238,6 +239,7 @@ class AssetHelper extends Helper {
 					break;
 
 					case 'css':
+					$buffer = preg_replace('/url\(([\"\'])?([^\"\']+)\\1\)/', 'url($1' . FULL_BASE_URL . $asset['url'] . '$2$1)', $buffer);
 					$tidy->parse($buffer);
 					$buffer = $tidy->print->plain();
 					break;
