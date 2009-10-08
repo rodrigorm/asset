@@ -55,7 +55,7 @@ class AssetHelper extends Helper {
 
 	var $View = null;
 
-	function __construct($paths=array()) {
+	function __construct($paths = array()) {
 		$this->paths = am($this->paths, $paths);
 
 		$this->View =& ClassRegistry::getObject('view');
@@ -89,13 +89,21 @@ class AssetHelper extends Helper {
 
 			switch($asset['type']) {
 				case 'js':
-				$processed = $this->__process($asset['type'], $asset['assets']);
-				$scripts_for_layout[] = $this->Javascript->link('/' . $this->cachePaths['js'] . '/' . $processed);
+					$processed = $this->__process($asset['type'], $asset['assets']);
+					if ($this->View->loaded['cdn']) {
+						$scripts_for_layout[] = $this->View->loaded['cdn']->javascript('/' . $this->cachePaths['js'] . '/' . $processed);
+					} else {
+						$scripts_for_layout[] = $this->Javascript->link('/' . $this->cachePaths['js'] . '/' . $processed);
+					}
 				break;
 				case 'css':
-				$processed = $this->__process($asset['type'], $asset['assets']);
-				$scripts_for_layout[] = $this->Html->css('/' . $this->cachePaths['css'] . '/' . $processed);
-				break;				
+					$processed = $this->__process($asset['type'], $asset['assets']);
+					if ($this->View->loaded['cdn']) {
+						$scripts_for_layout[] = $this->View->loaded['cdn']->css('/' . $this->cachePaths['css'] . '/' . $processed);
+					} else {
+						$scripts_for_layout[] = $this->Html->css('/' . $this->cachePaths['css'] . '/' . $processed);
+					}
+				break;
 				default:
 				$scripts_for_layout[] = $asset['assets']['script'];
 			}
