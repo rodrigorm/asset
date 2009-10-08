@@ -135,6 +135,11 @@ class AssetHelper extends Helper {
 			$this->cachePaths['css'] = Configure::read('Asset.cssPath');
 		}
 
+		if ($this->themeWeb) {
+			$this->cachePaths['js'] = $this->themeWeb . $this->cachePaths['js'];
+			$this->cachePaths['css'] = $this->themeWeb . $this->cachePaths['css'];
+		}
+
 		//split the scripts into js and css
 		$slot = 0;
 		$prev = '';
