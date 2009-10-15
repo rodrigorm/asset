@@ -281,13 +281,13 @@ class AssetHelper extends Helper {
 		return $fileName;
 	}
 
-	/**
-		* Find the source file contents.  Looks in in webroot, vendors and plugins.
-		*
-		* @param string $filename
-		* @return string the full path to the file
-		* @access private
-		*/
+/**
+ * Find the source file contents.  Looks in in webroot, vendors and plugins.
+ *
+ * @param string $filename
+ * @return string the full path to the file
+ * @access private
+ */
 	function __getFileContents(&$asset, $type) {
 		$assetFile = $this->__findFile($asset, $type);
 
@@ -335,13 +335,13 @@ class AssetHelper extends Helper {
 		return $assetFile;
 	}
 
-	/**
-		* Generate the cached filename.
-		*
-		* @param array $names an array of the original file names
-		* @return string
-		* @access private
-		*/
+/**
+ * Generate the cached filename.
+ *
+ * @param array $names an array of the original file names
+ * @return string
+ * @access private
+ */
 	function __generateFileName($names) {
 		$fileName = Sanitize::paranoid(str_replace('/', '-', implode('_', $names)), array('_', '-'));
 
