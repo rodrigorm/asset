@@ -252,7 +252,7 @@ class AssetHelper extends Helper {
 					break;
 
 					case 'css':
-					$buffer = preg_replace('/url\(([\"\'])?([^\"\']+)\\1\)/', 'url($1' . FULL_BASE_URL . $asset['url'] . '$2$1)', $buffer);
+					$buffer = preg_replace('/url\(([\"\'])?([^\"\']+)\\1\)/', 'url($1' . $asset['url'] . '$2$1)', $buffer);
 					$tidy->parse($buffer);
 					$buffer = $tidy->print->plain();
 					break;
@@ -386,6 +386,36 @@ class AssetHelper extends Helper {
 		}
 
 		return false;
+	}
+
+	function autoElements() {
+		$included = array_reverse(get_included_files());
+		$viewPaths = Configure::read('viewPaths');
+		$paths = array();
+		$themeWeb = null;
+		if ($this->themeWeb) {
+			$themeWeb = str_replace('/', DS, $this->themeWeb);
+		}
+
+		foreach ($viewPaths as $path) {
+			if ($themeWeb && file_exists($path . $themeWeb . 'elements' . DS)) {
+				$paths[] = $path . $themeWeb . 'elements' . DS;
+			}
+			if (file_exists($path . 'elements' . DS)) {
+				$paths[] = $path . 'elements' . DS;
+			}
+		}
+
+		foreach ($included as $file) {
+			foreach ($paths as $path) {
+				if (strpos($file, $path) === 0) {
+					$element = 'elements/' . str_replace(array($path, '.ctp', DS), array('', '', '/'), $file);
+					$this->Html->css($element, null, null, false);
+					break;
+				}
+			}
+		}
+
 	}
 }
 ?>
