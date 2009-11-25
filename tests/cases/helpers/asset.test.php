@@ -409,4 +409,59 @@ END;
 		
 		Configure::write('debug', 0);
 	}
+	
+	/**
+	 * Test the Star Fix (formerly known as ie_fix_friendly)
+	 * Star fix allows use of css properties like 
+	 * *position, *width which will restrict its being applied only to IE7. 
+	 *
+	 * @return void
+	 **/
+	// function testStarFix() {
+	// 	App::import('Vendor', 'Asset.csstidy', array('file'=>'class.csstidy.php'));
+	// 	
+	// 	$css = new csstidy();
+	// 	$css->set_cfg('preserve_css', false);
+	// 	$css->set_cfg('ie_fix_friendly', true);
+	// 	$css->set_cfg('optimise_shorthands', 0);
+	// 	$css->set_cfg('discard_invalid_properties', false);
+	// 
+	// 	
+	// }
+
+	function testStarFix() {
+
+	
+	  	$css = array(array('plugin' => 'asset', 'script' => 'star_fix'));
+	  	$fileName = $this->Asset->__process('css', $css);
+		/* star_fix.css (74%) */
+		// #star{top:0 10px 0;_position:relative;position:absolute;}
+		// 	.box ul.categories li{background:transparent url(../img/bg/boxlist_wide.gif) no-repeat scroll 0 0;float:left;height:45px;list-style-type:none;_margin:0 0 0 5px;width:306px;margin:0 0 10px 7px;padding:15px 0 18px 15px;}
+	
+	  	$expected = <<<END
+#star {
+position:static;
+top:0 10px 0;
+_position:relative;
+*position:absolute;
+}
+
+.box ul.categories li {
+background:transparent url(../img/bg/boxlist_wide.gif) no-repeat scroll 0 0;
+float:left;
+height:45px;
+list-style-type:none;
+margin:0 0 10px 9px;
+*margin:0 0 10px 7px;
+_margin:0 0 0 5px;
+padding:15px 0 18px 15px;
+width:306px;
+}
+END;
+	  	$contents = file_get_contents($this->cssCache . $fileName  . '.css');
+		echo($contents);
+	  $this->assertEqual($expected, $contents);
+	}
+
+	
 }
