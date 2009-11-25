@@ -255,9 +255,10 @@ END;
     );
     
     $scripts = $this->Asset->scripts_for_layout();
-    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/style1_style2_[0-9]{10}.css" \/>' . "\n\t" .
-								'<script type="text\/javascript" src="http:\/\/ajax.googleapis.com\/ajax\/libs\/jquery\/1.3.2\/jquery.min.js"><\/script>' . "\n\t" .
+    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/style1_style2_[0-9]{10}.css" [\/]{0,1}>' . "\n\t" .
+				'<script type="text\/javascript" src="http:\/\/ajax.googleapis.com\/ajax\/libs\/jquery\/1.3.2\/jquery.min.js"><\/script>' . "\n\t" .
                 '<script type="text\/javascript" src="\/cjs\/script1_script2_script3_[0-9]{10}.js"><\/script>/';
+
     $this->assertPattern($expected, $scripts);
   }
 
@@ -267,7 +268,7 @@ END;
     );
     
     $scripts = $this->Asset->scripts_for_layout();
-    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/open_source_with_js_and_css-lib_[0-9]{10}.css" \/>' . "\n\t" .
+    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/open_source_with_js_and_css-lib_[0-9]{10}.css" [\/]{0,1}>' . "\n\t" .
                 '<script type="text\/javascript" src="\/cjs\/open_source_with_js_and_css-lib_[0-9]{10}.js"><\/script>/';
                 
     $this->assertPattern($expected, $scripts);
@@ -314,7 +315,7 @@ END;
     );
     
     $scripts = $this->Asset->scripts_for_layout(array('css'));
-    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/style1_style2_[0-9]{10}.css" \/>/';
+    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/style1_style2_[0-9]{10}.css" [\/]{0,1}>/';
                 
     $this->assertPattern($expected, $scripts);
   }
@@ -329,7 +330,7 @@ END;
     );
     
     $scripts = $this->Asset->scripts_for_layout('css');
-    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/style1_style2_[0-9]{10}.css" \/>/';
+    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/style1_style2_[0-9]{10}.css" [\/]{0,1}>/';
                 
     $this->assertPattern($expected, $scripts);
   }
@@ -343,7 +344,7 @@ END;
     );
     
     $scripts = $this->Asset->scripts_for_layout('css');
-    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/style1_style2_[0-9]{10}.css" \/>/';
+    $expected = '/<link rel="stylesheet" type="text\/css" href="\/ccss\/style1_style2_[0-9]{10}.css" [\/]{0,1}>/';
                 
     $this->assertPattern($expected, $scripts);
     
