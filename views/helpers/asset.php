@@ -10,6 +10,12 @@
  *
  */
 
+/**
+ * @mitch notes
+ *
+ * @todo set CSS tidy option to respect IE order. 
+ **/
+
 App::import('Core', array('File', 'Folder', 'Sanitize'));
 
 class AssetHelper extends Helper {
@@ -210,11 +216,11 @@ class AssetHelper extends Helper {
       switch ($type) {
         case 'js':
           if (PHP5) {
-            App::import('Vendor', 'jsmin/jsmin');
+            App::import('Vendor', 'Asset.jsmin/jsmin');
           }
           break;
         case 'css':
-          App::import('Vendor', 'csstidy', array('file' => 'class.csstidy.php'));
+          App::import('Vendor', 'Asset.csstidy', array('file' => 'class.csstidy.php'));
           $tidy = new csstidy();
           $tidy->load_template($this->cssCompression);
           break;
