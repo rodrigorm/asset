@@ -14,7 +14,7 @@ class AssetTestCase extends CakeTestCase {
   var $cssCache = null;
   
   function startCase() {
-    $this->testAppRoot = ROOT . DS . 'app' . DS . 'plugins' . DS . 'asset' . DS . 'tests' . DS . 'test_app' . DS;
+    $this->testAppRoot = ROOT . DS . APP_DIR . DS . 'plugins' . DS . 'asset' . DS . 'tests' . DS . 'test_app' . DS;
     $this->wwwRoot =  $this->testAppRoot . 'webroot' . DS;
     $this->jsCache = $this->wwwRoot . 'cjs' . DS;
     $this->cssCache = $this->wwwRoot . 'ccss' . DS;
