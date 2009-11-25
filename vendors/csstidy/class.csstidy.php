@@ -26,6 +26,12 @@
  */
 
 /**
+ * @mitch mods
+ * - Added Option to allow IE Fix. ie_fix_friendly
+ *
+ **/
+
+/**
  * Various CSS data needed for correct optimisations etc.
  *
  * @version 1.3
@@ -268,6 +274,9 @@ function csstidy()
 	$this->settings['css_level'] = 'CSS2.1';
     $this->settings['preserve_css'] = false;
     $this->settings['timestamp'] = false;
+
+	//Allows things like *position. Not crazy about it, but hey, thats reality. 
+	$this->settings['ie_fix_friendly'] = false; 
 
 	$this->load_template('default');
     $this->print = new csstidy_print($this);
@@ -632,6 +641,9 @@ function parse($string) {
                 {
                     $this->property .= $this->_unicode($string,$i);
                 }
+				elseif ($this->get_cfg('ie_fix_friendly') && $string{$i} == '*' && !ctype_space($string{$i+1}) ){ //ie * fix...
+                	$this->property .= $string{$i};
+				}
             }
             elseif(!ctype_space($string{$i}))
             {
