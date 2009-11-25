@@ -133,12 +133,14 @@ END;
   
   function testProcessJsNew() {
     $this->assertFalse(is_dir($this->jsCache));
-    
     $js = array(array('plugin' => '', 'script' => 'script1'),
                 array('plugin' => '', 'script' => 'script2'),
                 array('plugin' => 'asset', 'script' => 'script3'));
     
     $fileName = $this->Asset->__process('js', $js);
+
+    $this->assertTrue(is_dir($this->jsCache), '%s: Failed to create folder '.$this->jsCache);
+
     $expected = <<<END
 /* script1.js (91%) */
 var str="I'm a string";alert(str);
@@ -151,6 +153,7 @@ alert(i);
 \$(function(){\$("#nav").show();});
 END;
     $contents = file_get_contents($this->jsCache . $fileName);
+
     $this->assertEqual($expected, $contents);
   }
   
@@ -178,8 +181,10 @@ END;
     $origFileName = $files[0];
 
     sleep(1);
-    $touched = touch($this->wwwRoot . 'js' . DS . 'script1.js');
-    $this->assertTrue($touched);
+	$toTouch = $this->wwwRoot . 'js' . DS . 'script1.js';
+    $touched = touch($toTouch);
+
+    $this->assertTrue($touched, '%s: Touch failed. Check permissions on '.$toTouch);
     
     $js = array(array('plugin' => '', 'script' => 'script1'),
                 array('plugin' => '', 'script' => 'script2'),
@@ -198,17 +203,22 @@ END;
                 array('plugin' => 'asset', 'script' => 'style3'));
     
     $fileName = $this->Asset->__process('css', $css);
+
+    $this->assertTrue(is_dir($this->cssCache), '%s: Failed to create folder '.$this->cssCache);
+
+
     $expected = <<<END
-/* style1.css (70%) */
+/* style1.css (78%) */
 *{margin:0;padding:0;}
 
-/* style2.css (85%) */
+/* style2.css (89%) */
 body{background:#003d4c;color:#fff;font-family:'lucida grande',verdana,helvetica,arial,sans-serif;font-size:90%;margin:0;}
 
-/* style3.css (69%) */
+/* style3.css (72%) */
 h1,h2,h3,h4{font-weight:400;}
 END;
     $contents = file_get_contents($this->cssCache . $fileName  . '.css');
+
     $this->assertEqual($expected, $contents);
   }
   
