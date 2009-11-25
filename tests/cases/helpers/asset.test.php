@@ -61,14 +61,14 @@ class AssetTestCase extends CakeTestCase {
   
   function testVendors() {
     if(PHP5) {
-      App::import('Vendor', 'jsmin/jsmin');
+      App::import('Vendor', 'Asset.jsmin/jsmin');
       $this->assertTrue(class_exists('JSMin'));
     }
-    
-    App::import('Vendor', 'csstidy', array('file' => 'class.csstidy.php'));
+	
+    App::import('Vendor', 'Asset.csstidy', array('file'=>'class.csstidy.php'));
     $this->assertTrue(class_exists('csstidy'));
   }
-  
+
   function testAfterRender() {
     $this->View->__scripts = array('script1', 'script2', 'script3');
     $this->Asset->afterRender();
