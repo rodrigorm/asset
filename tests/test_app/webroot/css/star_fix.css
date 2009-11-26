@@ -1,17 +1,5 @@
 #star {
-    position: static;    
-    top: 0 10px 0;
+    position: static;
+    *position: absolute;
     _position: relative;
-    *position: absolute;    
-}
-.box ul.categories li {
-	background:transparent url(../img/bg/boxlist_wide.gif) no-repeat scroll 0 0;
-	float:left;
-	height:45px;
-	list-style-type:none;
-	margin:0 0 10px 9px;
-	*margin: 0 0 10px 7px;
-	_margin:0 0 0px 5px;
-	padding:15px 0 18px 15px;
-	width:306px;
 }

@@ -27,7 +27,7 @@
 
 /**
  * @mitch mods
- * - Added Option to allow IE Fix. ie_fix_friendly
+ * - Added Option to allow IE Fix. star_hack
  *
  **/
 
@@ -276,7 +276,7 @@ function csstidy()
     $this->settings['timestamp'] = false;
 
 	//Allows things like *position. Not crazy about it, but hey, thats reality. 
-	$this->settings['ie_fix_friendly'] = false; 
+	$this->settings['star_hack'] = false; 
 
 	$this->load_template('default');
     $this->print = new csstidy_print($this);
@@ -641,7 +641,7 @@ function parse($string) {
                 {
                     $this->property .= $this->_unicode($string,$i);
                 }
-				elseif ($this->get_cfg('ie_fix_friendly') && $string{$i} == '*' && !ctype_space($string{$i+1}) ){ //ie * fix...
+				elseif ($this->get_cfg('star_hack') && $string{$i} == '*' && !ctype_space($string{$i+1}) ){ //ie * fix...
                 	$this->property .= $string{$i};
 				}
             }
