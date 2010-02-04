@@ -389,10 +389,13 @@ class AssetHelper extends Helper {
 	}
 
 	function __getPaths(&$asset, $type) {
-		$paths = array($this->__getPath($type));
+		$paths = array();
 		if ($this->themeWeb) {
 			$paths[] = $this->paths['wwwRoot'] . $this->themeWeb . $type . DS;
 		}
+		
+		$paths[] = $this->__getPath($type);
+
 		if (Configure::read('Asset.searchPaths')) {
 			$paths = array_merge($paths, Configure::read('Asset.searchPaths'));
 		}
