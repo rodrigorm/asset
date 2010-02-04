@@ -158,10 +158,7 @@ class AssetHelper extends Helper {
 			if (preg_match('/(src|href)="(\/?((themed\/[^\/]+)?.*\/)?(js|css)\/(.*).(js|css))"/', $script, $match)) {
 				$temp = array();
 				$temp['script'] = $match[6];
-				$temp['plugin'] = trim($match[3], '/');
-				if (!empty($match[4])) {
-					$temp['plugin'] = str_replace($match[4], '', $temp['plugin']);
-				}
+				$temp['plugin'] = $this->__plugin($temp['script']);
 				$temp['url'] = str_replace(basename($match[2]), '', $match[2]);
 
 				if($prev != $match[7] && !empty($holding)) {
@@ -187,6 +184,25 @@ class AssetHelper extends Helper {
 
 		if(!empty($holding)) {
 			$this->assets[$slot] = array('type' => $prev, 'assets' => $holding);
+		}
+	}
+
+	function __plugin($script) {
+		static $isPlugin = null;
+		if (is_null($isPlugin)) {
+			$plugins = App::objects('plugin');
+			if (empty($plugin)) {
+				$isPlugin = false;
+			} else {
+				$plugins = array_map(array('Inflector', 'underscore'), $plugins);
+				$isPlugin = '/^\/(' . implode('|', $plugins) . ')\//';
+			}
+		}
+		if (!$isPlugin) {
+			return '';
+		}
+		if (preg_match($isPlugin, $scripts, $match)) {
+			return $match[1];
 		}
 	}
 
@@ -322,7 +338,7 @@ class AssetHelper extends Helper {
 		}
 
 		if (!empty($asset['plugin']) > 0) {
-			$pluginPaths = Configure::read('pluginPaths');
+			$pluginPaths = App::path('plugins');
 			$count = count($pluginPaths);
 			for ($i = 0; $i < $count; $i++) {
 				$paths[] = $pluginPaths[$i] . $asset['plugin'] . DS . 'vendors' . DS;
@@ -382,7 +398,7 @@ class AssetHelper extends Helper {
 		}
 
 		if (!empty($asset['plugin']) > 0) {
-			$pluginPaths = Configure::read('pluginPaths');
+			$pluginPaths = App::path('plugins');
 			$count = count($pluginPaths);
 			for ($i = 0; $i < $count; $i++) {
 				$paths[] = $pluginPaths[$i] . $asset['plugin'] . DS . 'vendors' . DS;
