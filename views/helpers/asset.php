@@ -86,6 +86,11 @@ class AssetHelper extends Helper {
 			return join("\n\t", $this->View->__scripts);
 		}
 
+		$Helper =& $this->Html;
+		if (array_key_exists('cdn', $this->View->loaded)) {
+			$Helper =& $this->View->loaded['cdn'];
+		}
+
 		$scripts_for_layout = array();
 		foreach($this->assets as $asset) {
 			if(!in_array($asset['type'], $types) ) {
@@ -95,19 +100,11 @@ class AssetHelper extends Helper {
 			switch($asset['type']) {
 				case 'js':
 					$processed = $this->__process($asset['type'], $asset['assets']);
-					if ($this->View->loaded['cdn']) {
-						$scripts_for_layout[] = $this->View->loaded['cdn']->javascript('/' . $this->cachePaths['js'] . '/' . $processed);
-					} else {
-						$scripts_for_layout[] = $this->Javascript->link('/' . $this->cachePaths['js'] . '/' . $processed);
-					}
+					$scripts_for_layout[] = $Helper->script('/' . $this->cachePaths['js'] . '/' . $processed);
 				break;
 				case 'css':
 					$processed = $this->__process($asset['type'], $asset['assets']);
-					if ($this->View->loaded['cdn']) {
-						$scripts_for_layout[] = $this->View->loaded['cdn']->css('/' . $this->cachePaths['css'] . '/' . $processed);
-					} else {
-						$scripts_for_layout[] = $this->Html->css('/' . $this->cachePaths['css'] . '/' . $processed);
-					}
+					$scripts_for_layout[] = $Helper->css('/' . $this->cachePaths['css'] . '/' . $processed);
 				break;
 				default:
 				$scripts_for_layout[] = $asset['assets']['script'];
@@ -231,21 +228,21 @@ class AssetHelper extends Helper {
 			$ts = time();
 			switch ($type) {
 				case 'js':
-				if (PHP5) {
-					App::import('Vendor', 'Asset.jsmin/jsmin');
-				}
-				break;
+					if (PHP5) {
+						App::import('Vendor', 'Asset.jsmin/jsmin');
+					}
+					break;
 				case 'css':
-				App::import('Vendor', 'Asset.csstidy', array('file' => 'class.csstidy.php'));
-				$tidy = new csstidy();
+					App::import('Vendor', 'Asset.csstidy', array('file' => 'class.csstidy.php'));
+					$tidy = new csstidy();
 
-				$tidy->set_cfg('preserve_css', false);
-				$tidy->set_cfg('ie_fix_friendly', true);
-				$tidy->set_cfg('optimise_shorthands', 0); //Maintain the order of ie hacks (properties)
-				$tidy->set_cfg('discard_invalid_properties', false);
+					$tidy->set_cfg('preserve_css', false);
+					$tidy->set_cfg('ie_fix_friendly', true);
+					$tidy->set_cfg('optimise_shorthands', 0); //Maintain the order of ie hacks (properties)
+					$tidy->set_cfg('discard_invalid_properties', false);
 
-				$tidy->load_template($this->cssCompression);
-				break;
+					$tidy->load_template($this->cssCompression);
+					break;
 			}
 
 			//merge the script
@@ -263,6 +260,7 @@ class AssetHelper extends Helper {
 					break;
 
 					case 'css':
+					$buffer = preg_replace('/url\(([\"\'])?([^\"\']+)\\1\)/', 'url($1' . FULL_BASE_URL . $asset['url'] . '$2$1)', $buffer);
 					$tidy->parse($buffer);
 					$buffer = $tidy->print->plain();
 					break;
@@ -318,7 +316,7 @@ class AssetHelper extends Helper {
 			return $this->foundFiles[$key];
 		}
 
-		$paths = array($this->__getPath($type));
+		$paths = $this->__getPaths($asset, $type);
 		if (Configure::read('Asset.searchPaths')) {
 			$paths = array_merge($paths, Configure::read('Asset.searchPaths'));
 		}
@@ -331,7 +329,7 @@ class AssetHelper extends Helper {
 			}
 		}
 
-		$paths = array_merge($paths, Configure::read('vendorPaths'));
+		$paths = array_merge($paths, App::path('vendors'));
 		$assetFile = '';
 		foreach ($paths as $path) {
 			$script = sprintf('%s.%s', $asset['script'], $type);
@@ -394,7 +392,7 @@ class AssetHelper extends Helper {
 			}
 		}
 
-		$paths = array_merge($paths, Configure::read('vendorPaths'));
+		$paths = array_merge($paths, App::path('vendors'));
 
 		return $paths;
 	}
