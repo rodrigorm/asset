@@ -1,0 +1,5 @@
+#star {
+    position: static;
+    *position: absolute;
+    _position: relative;
+}

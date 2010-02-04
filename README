@@ -15,8 +15,8 @@
 
 /* Instructions */
    1. You'll need a working version of CakePHP installed. This is running on 1.2.2.8120 stable.
-   2. Download jsmin 1.1.0 or later and put it in vendors/jsmin.
-   3. Download CSSTidy 1.3 or later and put the contents in vendors/csstidy.
+   2. Download jsmin 1.1.0 or later and put it in vendors/jsmin (http://code.google.com/p/jsmin-php/).
+   3. Download CSSTidy 1.3 or later and put the contents in vendors/csstidy (http://sourceforge.net/projects/csstidy/).
    4. Download the plugin to /app/plugins/asset.
    5. Include the helper in any controller that will need it. Most likely you will put it in AppController so that it's available to all your controllers:
       var $helpers = array('Asset.asset');

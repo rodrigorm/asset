@@ -1,14 +1,20 @@
 <?php
 /*
-	* Asset Packer CakePHP Plugin
-	* Copyright (c) 2009 Matt Curry
-	* www.PseudoCoder.com
-	* http://github.com/mcurry/asset
-*
-	* @author      Matt Curry <matt@pseudocoder.com>
-	* @license     MIT
-	*
-	*/
+ * Asset Packer CakePHP Plugin
+ * Copyright (c) 2009 Matt Curry
+ * www.PseudoCoder.com
+ * http://github.com/mcurry/asset
+ *
+ * @author      Matt Curry <matt@pseudocoder.com>
+ * @license     MIT
+ *
+ */
+
+/**
+ * @mitch notes
+ *
+ * @todo set CSS tidy option to respect IE order. 
+ **/
 
 App::import('Core', array('File', 'Folder', 'Sanitize'));
 
@@ -57,7 +63,6 @@ class AssetHelper extends Helper {
 
 	function __construct($paths = array()) {
 		$this->paths = am($this->paths, $paths);
-
 		$this->View =& ClassRegistry::getObject('view');
 	}
 
@@ -227,12 +232,18 @@ class AssetHelper extends Helper {
 			switch ($type) {
 				case 'js':
 				if (PHP5) {
-					App::import('Vendor', 'jsmin/jsmin');
+					App::import('Vendor', 'Asset.jsmin/jsmin');
 				}
 				break;
 				case 'css':
-				App::import('Vendor', 'csstidy', array('file' => 'class.csstidy.php'));
+				App::import('Vendor', 'Asset.csstidy', array('file' => 'class.csstidy.php'));
 				$tidy = new csstidy();
+
+				$tidy->set_cfg('preserve_css', false);
+				$tidy->set_cfg('ie_fix_friendly', true);
+				$tidy->set_cfg('optimise_shorthands', 0); //Maintain the order of ie hacks (properties)
+				$tidy->set_cfg('discard_invalid_properties', false);
+
 				$tidy->load_template($this->cssCompression);
 				break;
 			}
@@ -252,7 +263,6 @@ class AssetHelper extends Helper {
 					break;
 
 					case 'css':
-					$buffer = preg_replace('/url\(([\"\'])?([^\"\']+)\\1\)/', 'url($1' . $asset['url'] . '$2$1)', $buffer);
 					$tidy->parse($buffer);
 					$buffer = $tidy->print->plain();
 					break;
@@ -308,8 +318,20 @@ class AssetHelper extends Helper {
 			return $this->foundFiles[$key];
 		}
 
-		$paths = $this->__getPaths($asset, $type);
+		$paths = array($this->__getPath($type));
+		if (Configure::read('Asset.searchPaths')) {
+			$paths = array_merge($paths, Configure::read('Asset.searchPaths'));
+		}
 
+		if (!empty($asset['plugin']) > 0) {
+			$pluginPaths = Configure::read('pluginPaths');
+			$count = count($pluginPaths);
+			for ($i = 0; $i < $count; $i++) {
+				$paths[] = $pluginPaths[$i] . $asset['plugin'] . DS . 'vendors' . DS;
+			}
+		}
+
+		$paths = array_merge($paths, Configure::read('vendorPaths'));
 		$assetFile = '';
 		foreach ($paths as $path) {
 			$script = sprintf('%s.%s', $asset['script'], $type);
