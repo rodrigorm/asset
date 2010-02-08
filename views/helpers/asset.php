@@ -1,12 +1,10 @@
 <?php
+App::import('Core', array('File', 'Folder', 'Sanitize'));
+
 class AssetHelper extends AppHelper {
 	var $helpers = array('Html');
 	var $View = null;
-	var $assets = array(
-		'css'       => array(),
-		'js'        => array(),
-		'codeblock' => array()
-	);
+	var $assets = array();
 
 	//you can change this if you want to store the files in a different location.
 	//this is relative to your webroot
@@ -29,8 +27,7 @@ class AssetHelper extends AppHelper {
 	//http://github.com/mcurry/js/tree/master
 	var $Lang = false;
 
-	var $viewScriptsCount = 0;
-	var $md5FileName = true;
+	var $viewScriptCount = 0;
 
 	function __construct() {
 		$this->View =& ClassRegistry::getObject('view');
@@ -44,10 +41,6 @@ class AssetHelper extends AppHelper {
 		}
 		if (Configure::read('Asset.cssCompression')) {
 			$this->cssCompression = Configure::read('Asset.cssCompression');
-		}
-
-		if (Configure::read('Asset.md5FileName')) {
-			$this->md5FileName = Configure::read('Asset.md5FileName');
 		}
 
 		if (Configure::read('Asset.checkTs')) {
@@ -66,7 +59,7 @@ class AssetHelper extends AppHelper {
 		}
 	}
 
-	function scripts_for_layout($types) {
+	function scripts_for_layout($types = array('css', 'js', 'codeblock')) {
 		$types = (array)$types;
 
 		if ($this->viewScriptCount) {
@@ -77,7 +70,7 @@ class AssetHelper extends AppHelper {
 			$this->viewScriptCount = false;
 		}
 
-		if (Configure::read('debug')) {
+		if (Configure::read('debug') && !defined('TESTS')) {
 			return join("\n\t", $this->View->__scripts);
 		}
 
@@ -89,18 +82,22 @@ class AssetHelper extends AppHelper {
 		}
 
 		$scripts_for_layout = array();
-		foreach ($types as $type) {
-			if (count($this->assets[$type]) == 0) {
+		foreach ($this->assets as $group) {
+			if (!in_array($group['type'], $types)) {
 				continue;
 			}
-			$processed = $this->_process($type, $this->assets[$type]);
+			extract($group, EXTR_OVERWRITE);
+			if ($type == 'codeblock') {
+				$content = Set::extract('/content', $assets);
+				$scripts_for_layout = array_merge($scripts_for_layout, $content);
+				continue;
+			}
+			$processed = $this->_process($type, $assets);
 			if ($type == 'css') {
 				$processed = str_replace('.css', '', $processed);
 				$scripts_for_layout[] = $Helper->css('/' . $this->paths['css'] . '/' . $processed);
 			} elseif ($type == 'js') {
 				$scripts_for_layout[] = $Helper->script('/' . $this->paths['js'] . '/' . $processed);
-			} else {
-				$scripts_for_layout[] = $asset['content'];
 			}
 		}
 
@@ -108,21 +105,37 @@ class AssetHelper extends AppHelper {
 	}
 
 	function _parse() {
+		$assets = array();
+		$currentType = null;
 		foreach ($this->View->__scripts as $i => $script) {
-			if (preg_match('/(src|href)="(.*.(js|css))"/', $script, $match)) {
+			if (preg_match('/(src|href)="(\/.*\.(js|css))"/', $script, $match)) {
 				$type = $match[3];
 				$asset = $this->_asset($type, $match[2]);
 
 				if ($asset === false) {
 					continue;
 				}
-
-				$this->assets[$type][] = $asset;
 			} else {
-				$this->assets['codeblock'][] = array(
+				$type = 'codeblock';
+				$asset = array(
 					'content' => $script
 				);
 			}
+			if ($type !== $currentType && count($assets) > 0) {
+				$this->assets[] = array(
+					'type'   => $currentType,
+					'assets' => $assets
+				);
+				$assets = array();
+			}
+			$currentType = $type;
+			$assets[] = $asset;
+		}
+		if (!empty($assets)) {
+			$this->assets[] = array(
+				'type'   => $currentType,
+				'assets' => $assets
+			);
 		}
 		$this->View->__scripts = array();
 
@@ -204,7 +217,7 @@ class AssetHelper extends AppHelper {
 		$path = str_replace(basename($asset['url']), '', $asset['url']);
 
 		$content = trim(file_get_contents($file));
-		$content = preg_replace('/url\(([\"\'])?([^\"\']+)\\1\)/', 'url($1' . FULL_BASE_URL . $path . '$2$1)', $content);
+		$content = preg_replace('/url\(([\"\'])?([^\"\']+)\\1\)/', 'url($1' . Router::url('/') . $path . '$2$1)', $content);
 		$tidy->parse($content);
 		$content = $tidy->print->plain();
 
@@ -227,7 +240,7 @@ class AssetHelper extends AppHelper {
 	}
 
 	function _process($type, $assets) {
-		$folder = new Folder($this->webroot . $this->paths[$type], true);
+		$folder = new Folder(Configure::read('App.www_root') . $this->paths[$type], true);
 
 		$scripts = Set::extract('/file', $assets);
 		$fileName = $this->_generateFileName($scripts) . '.' . $type;
@@ -259,25 +272,22 @@ class AssetHelper extends AppHelper {
 			if ($size > 0) {
 				$delta = (strlen($compressed) / $size) * 100;
 			}
-			$buffer .= sprintf("/* %s.%s (%d%%) */\n", $asset['url'], $type, $delta);
+			$buffer .= sprintf("/* %s (%d%%) */\n", $asset['url'], $delta);
 			$buffer .= $compressed . "\n\n";
 		}
 
 		$file = new File($path);
 		$file->write(trim($buffer));
+		$file->close();
 
 		return $fileName;
 	}
 
 	function _generateFileName($names) {
-		App::import('Core', 'Sanitize');
-		$fileName = Sanitize::paranoid(str_replace('/', '-', implode('_', $names)), array('_', '-'));
-
-		if ($this->md5FileName) {
-			$fileName = md5($fileName);
+		foreach ($names as &$name) {
+			$name = md5(str_replace(array(APP, DS), array('', '/'), $name));
 		}
-
-		return $fileName;
+		return md5(implode('', $names));
 	}
 }
 ?>
