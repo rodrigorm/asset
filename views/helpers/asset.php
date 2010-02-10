@@ -222,15 +222,27 @@ class AssetHelper extends AppHelper {
 
 			$tidy->load_template($this->cssCompression);
 		}
-		$path = str_replace(basename($asset['url']), '', $asset['url']);
+		$path = trim(str_replace(basename($asset['url']), '', $asset['url']), '/');
 
 		$content = trim(file_get_contents($file));
-		$content = preg_replace('/url\(([\"\'])?([^\"\']+)\\1\)/', 'url($1' . Router::url('/') . $path . '$2$1)', $content);
+		$content = preg_replace_callback('/url\(([\"\'])?([^\"\']+)\\1\)/', array(&$this, '_cssResources'), $content);
+		$content = str_replace('{path}', $path, $content);
 		$tidy->parse($content);
 		$content = $tidy->print->plain();
 
 		return $content;
 	}
+
+	function _cssResources($matches) {
+		if (array_key_exists('cdn', $this->View->loaded)) {
+			$urlBase = $this->View->loaded['cdn']->url('/');
+		} else {
+			$urlBase = Router::url('/', true);
+		}
+		$url = $urlBase . '{path}' . '/' . $matches[2];
+		$replacement = 'url(' . $matches[1] . $url . $matches[1] . ')';
+		return $replacement;
+ 	}
 
 	function _compressJs($file, $asset) {
 		if($this->Lang && strpos($file, $this->Lang->paths['source']) !== false) {
