@@ -143,7 +143,7 @@ class AssetHelper extends AppHelper {
 	}
 
 	function _asset($type, $url) {
-		$file = $this->_file($url);
+		$file = $this->_file($url, $type);
 
 		if ($file === false) {
 			return false;
@@ -189,6 +189,14 @@ class AssetHelper extends AppHelper {
 			}
 		}
 
+		if(strpos($url, '/lang') && $this->Lang) {
+			$script = substr($url, 3);
+			$script = $this->Lang->parseFile($this->Lang->normalize($script));
+			if (is_file($this->Lang->paths['source'] . $script) && file_exists($this->Lang->paths['source'] . $script)) {
+				return $this->Lang->paths['source'] . $script;
+			}
+		}
+
 		return false;
 	}
 
@@ -196,7 +204,7 @@ class AssetHelper extends AppHelper {
 		if ($type == 'css') {
 			return $this->_compressCss($file, $asset);
 		} elseif ($type == 'js') {
-			return $this->_compressJs($file);
+			return $this->_compressJs($file, $asset);
 		}
 		return file_get_contents($file);
 	}
@@ -224,14 +232,14 @@ class AssetHelper extends AppHelper {
 		return $content;
 	}
 
-	function _compressJs($file) {
+	function _compressJs($file, $asset) {
 		if($this->Lang && strpos($file, $this->Lang->paths['source']) !== false) {
-			$content = $this->Lang->i18n($asset['script'] . '.js');
+			$script = substr($asset['url'], 3);
+			$content = $this->Lang->i18n($script);
 		} else {
 			$content = trim(file_get_contents($file));
 		}
 
-		$content = file_get_contents($file);
 		if (!PHP5) {
 			return $content;
 		}

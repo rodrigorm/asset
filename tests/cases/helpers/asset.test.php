@@ -13,14 +13,24 @@ class AssetTestCase extends CakeTestCase {
 		$this->cssCache = $this->webroot . 'ccss' . DS;
 
 		Configure::write('App.www_root', $this->webroot);
+
+		Configure::write('Js.paths', array(
+			'wwwRoot' => $this->webroot,
+			'js'      => $this->webroot . 'js' . DS,
+			'source'  => $this->webroot . 'js' . DS . 'source' . DS
+		));
+
 		App::build(array(
 			'views' => array(
 				$this->root . 'views' . DS
 			),
 			'plugins' => array(
 				$this->root . 'plugins' . DS
+			),
+			'locales' => array(
+				$this->root . 'locale' . DS
 			)
-		), true);
+		));
 
     	$this->Folder = new Folder();
 	}
@@ -514,6 +524,34 @@ _position:relative;
 END;
 
 		$this->assertEqual($expected, $result);
+	}
+
+	function testLangFindFile() {
+		if ($this->skipIf(!App::import('Model', 'Js.JsLang'), '%s JS localize plugin not installed')) {
+			return;
+		}
+
+		$url = '/js/lang/en/test.js';
+		$result = $this->Asset->_file($url);
+		$expected = $this->webroot .  'js' . DS . 'source' . DS . 'test.js';
+		$this->assertEqual($result, $expected);
+	}
+
+	function testLangCompressJs() {
+		if ($this->skipIf(!App::import('Model', 'Js.JsLang'), '%s JS localize plugin not installed')) {
+			return;
+		}
+
+		Configure::write('Config.language', 'en');
+
+		$file = $this->webroot .  'js' . DS . 'source' . DS . 'test.js';
+		$asset = array(
+			'url' => '/js/lang/en/test.js',
+			'file' => $file
+		);
+		$result = $this->Asset->_compressJs($file, $asset);
+		$expected = 'alert("Hello World");';
+		$this->assertEqual($result, $expected);
 	}
 }
 ?>
