@@ -70,7 +70,7 @@ class AssetHelper extends AppHelper {
 			$this->viewScriptCount = false;
 		}
 
-		if (Configure::read('debug') && !defined('TESTS')) {
+		if (Configure::read('debug')) {
 			return join("\n\t", $this->View->__scripts);
 		}
 
