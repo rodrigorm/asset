@@ -225,7 +225,7 @@ class AssetHelper extends AppHelper {
 		$path = trim(str_replace(basename($asset['url']), '', $asset['url']), '/');
 
 		$content = trim(file_get_contents($file));
-		$content = preg_replace_callback('/url\(([\"\'])?([^\"\']+)\\1\)/', array(&$this, '_cssResources'), $content);
+		$content = preg_replace_callback('/url\(([^\)]+)\)/', array(&$this, '_cssResources'), $content);
 		$content = str_replace('{path}', $path, $content);
 		$tidy->parse($content);
 		$content = $tidy->print->plain();
@@ -234,13 +234,14 @@ class AssetHelper extends AppHelper {
 	}
 
 	function _cssResources($matches) {
+		var_dump($matches);
 		if (array_key_exists('cdn', $this->View->loaded)) {
 			$urlBase = $this->View->loaded['cdn']->url('/');
 		} else {
 			$urlBase = Router::url('/', true);
 		}
-		$url = $urlBase . '{path}' . '/' . $matches[2];
-		$replacement = 'url(' . $matches[1] . $url . $matches[1] . ')';
+		$url = $urlBase . '{path}' . '/' . trim($matches[1], '"\'');
+		$replacement = 'url(' . $url . ')';
 		return $replacement;
  	}
 
