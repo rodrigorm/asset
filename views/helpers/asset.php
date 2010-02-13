@@ -234,7 +234,6 @@ class AssetHelper extends AppHelper {
 	}
 
 	function _cssResources($matches) {
-		var_dump($matches);
 		if (array_key_exists('cdn', $this->View->loaded)) {
 			$urlBase = $this->View->loaded['cdn']->url('/');
 		} else {
